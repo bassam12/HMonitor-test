@@ -1,4 +1,4 @@
 HMonitor
 ========
 
-App which reads  heart pulse of person using Android Mobile phone.
+App reads heart pulse of a person using Android Mobile phone.
