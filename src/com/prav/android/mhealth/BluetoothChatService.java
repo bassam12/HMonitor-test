@@ -294,13 +294,19 @@ public class BluetoothChatService {
             {
               int i = paramInputStream.read();
               int j = (char)i;
-              //Log.i("IN_J","J Value:" + Integer.toString(j)+ " ");
+              Log.i("IN_J","J Value:" + Integer.toString(j)+ " ");
               paramArrayOfInt[0] = (k + 1);
-              //Log.i("IN_ArrayOfInt","ArrayOfInt Value:" + Integer.toString(paramArrayOfInt[0])+ " ");
-              paramArrayOfByte[k] = (byte)j;
-              //Log.i("IN_ArrayOfByte","ArrayOfBytes[" +k + "]" + Integer.toString(paramArrayOfByte[k])+ " ");
-              if(paramArrayOfByte[k]== 10)
-               break;
+              Log.i("IN_ArrayOfInt","ArrayOfInt Value:" + Integer.toString(paramArrayOfInt[0])+ " ");
+              
+              Log.i("IN_ArrayOfByte Before","ArrayOfBytes[" +k + "]" + Integer.toString(paramArrayOfByte[k])+ " ");
+              if(k>12)
+              {
+                  paramArrayOfByte[k] = (byte)j;
+            	  Log.i("IN_ArrayOfByte After","ArrayOfBytes[" +k + "]" + Integer.toString(paramArrayOfByte[k])+ " ");
+            	  if(paramArrayOfByte[k]== 10)
+                  break;
+            	  k=k+1;
+              }
               else
                k=k+1;
             }
