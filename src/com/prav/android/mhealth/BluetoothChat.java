@@ -1,4 +1,28 @@
+/*
+ * Copyright (C) 2009 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.prav.android.mhealth;
+
+import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.PropertyInfo;
+import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapPrimitive;
+import org.ksoap2.serialization.SoapSerializationEnvelope;
+import org.ksoap2.transport.HttpTransportSE;
+
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -15,11 +39,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView.OnItemClickListener;
 import android.view.inputmethod.EditorInfo;
+
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +55,16 @@ import android.widget.Toast;
  * This is the main Activity that displays the current chat session.
  */
 public class BluetoothChat extends Activity {
+	//Webservices 
+	
+	private final String NAMESPACE = "http://ws.mhealth.prav.com";
+    private final String URL = "http://192.168.10.58:8005/mhealthWS/services/PatientsWs?wsdl";
+    private final String SOAP_ACTION = "http://ws.mhealth.prav.com";
+    private final String METHOD_NAME = "insertData";
+    TextView hvalue;
+	
     // Debugging
+	private Spinner spinnerPatients;
     private static final String TAG = "BluetoothChat";
     private static final boolean D = true;
 
@@ -68,12 +105,13 @@ public class BluetoothChat extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(D) Log.e(TAG, "+++ ON CREATE +++");
-
         // Set up the window layout
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         setContentView(R.layout.main);
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_title);
-
+        spinnerPatients = (Spinner) findViewById(R.id.spinnerPatients);
+        Database.populatePatients(spinnerPatients);
+        
         // Set up the custom title
         mTitle = (TextView) findViewById(R.id.title_left_text);
         mTitle.setText(R.string.app_name);
@@ -130,7 +168,19 @@ public class BluetoothChat extends Activity {
         mConversationArrayAdapter = new ArrayAdapter<String>(this, R.layout.message);
         mConversationView = (ListView) findViewById(R.id.in);
         mConversationView.setAdapter(mConversationArrayAdapter);
-
+        
+        mConversationView.setOnItemClickListener(new OnItemClickListener() {
+        	public void onItemClick(AdapterView<?> parent,View v, int position, long id){
+        		String item = ((TextView)v).getText().toString();
+        		String item1 = item.replace("\n","").replace("\r","").replace("\0", "");
+        		//Toast.makeText(getBaseContext(), item, Toast.LENGTH_LONG).show();
+        		hvalue = (TextView) findViewById(R.id.textViewHvalue);
+        		//EditText hvalue = (EditText) findViewById(R.id.editTextHvalue);
+        		hvalue.setText(item1);
+        		//hvalue.setEnabled(false);
+        		
+        	}
+		});
         // Initialize the compose field with a listener for the return key
         mOutEditText = (EditText) findViewById(R.id.edit_text_out);
         mOutEditText.setOnEditorActionListener(mWriteListener);
@@ -320,5 +370,65 @@ public class BluetoothChat extends Activity {
         }
         return false;
     }
-
+    public void addRecord(View v) {
+		// get access to views
+				String patient_Id = Database.getPatientId(spinnerPatients);
+				String patient_Bgroup = Database.getPatientBgroup(spinnerPatients);
+    	
+    			//String patient_Id = "1236";
+    			//String patient_Bgroup = "AA+";
+				String patient_Hvalue = hvalue.getText().toString();
+				
+				//String patient_Hvalue = p.replace("\n", "").replace("\r", "");
+				//Toast.makeText(getBaseContext(), patient_Hvalue, Toast.LENGTH_LONG).show();
+    			//String patient_Hvalue = "199";
+    			Toast.makeText(getBaseContext(), patient_Hvalue, Toast.LENGTH_LONG).show();
+				
+				
+				
+				SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
+				//Pass value for userName variable of the web service
+		        PropertyInfo pidProp =new PropertyInfo();
+		        pidProp.setName("patientId");//Define the variable name in the web service method
+		        pidProp.setValue(patient_Id);//Define value for fname variable
+		        pidProp.setType(String.class);//Define the type of the variable
+		        request.addProperty(pidProp);//Pass properties to the variable
+		      
+		      //Pass value for userPassword variable of the web service
+		        PropertyInfo phvalueProp =new PropertyInfo();
+		        phvalueProp.setName("patientHvalue");
+		        phvalueProp.setValue(patient_Hvalue);
+		        phvalueProp.setType(String.class);
+		        request.addProperty(phvalueProp);
+		       
+		        //Pass value for userPassword variable of the web service
+		        PropertyInfo pbgroupProp =new PropertyInfo();
+		        pbgroupProp.setName("patientBgroup");
+		        pbgroupProp.setValue(patient_Bgroup);
+		        pbgroupProp.setType(String.class);
+		        request.addProperty(pbgroupProp);
+		       
+		         
+		        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+		        envelope.setOutputSoapObject(request);
+		        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
+		    	
+		        try{
+		        	androidHttpTransport.call(SOAP_ACTION, envelope);
+		            SoapPrimitive response = (SoapPrimitive)envelope.getResponse();
+		            
+		            TextView result = (TextView) findViewById(R.id.textViewRonCloud);
+		            result.setText(response.toString());
+		            String success = "Record added successfully";
+		            Toast.makeText(getBaseContext(), success, Toast.LENGTH_LONG).show();
+		
+		    	}
+		    	catch(Exception e){
+		    	 String exresult= e.toString();
+		    	 Toast.makeText(getBaseContext(), exresult, Toast.LENGTH_LONG).show();
+		    		
+		    	}
+				
+				
+    }
 }
