@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2009 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.prav.android.mhealth;
 
 import java.io.IOException;
@@ -301,7 +317,7 @@ public class BluetoothChatService {
               Log.i("IN_ArrayOfByte Before","ArrayOfBytes[" +k + "]" + Integer.toString(paramArrayOfByte[k])+ " ");
               if(k>12)
               {
-                  paramArrayOfByte[k] = (byte)j;
+            	  paramArrayOfByte[k] = (byte)j;
             	  Log.i("IN_ArrayOfByte After","ArrayOfBytes[" +k + "]" + Integer.toString(paramArrayOfByte[k])+ " ");
             	  if(paramArrayOfByte[k]== 10)
                   break;
@@ -320,15 +336,15 @@ public class BluetoothChatService {
             try {
             		while (true) {
             				gets(this.mmInStream,arrayOfByte,arrayOfInt);
-            				//Log.i("Enter into main looopo","Main:");
+            				Log.i("Enter into main looopo","Main:");
             				mHandler.obtainMessage(BluetoothChat.MESSAGE_READ, arrayOfInt[0], -1, arrayOfByte).sendToTarget();
             					} 
             	}catch (IOException e) {
             Log.e(TAG, "disconnected", e);
             connectionLost();
-            //break;
-        }
             
+        }
+          //break; 
         }
 
         /**
