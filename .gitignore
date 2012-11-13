@@ -14,3 +14,10 @@ gen/
 
 # Local configuration file (sdk path, etc)
 local.properties
+<<<<<<< HEAD
+=======
+
+# Eclipse project files
+.classpath
+.project
+>>>>>>> c5f831d523460b58f3a46a071909acd5b1a761fe
